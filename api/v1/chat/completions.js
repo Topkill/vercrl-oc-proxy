@@ -7,7 +7,7 @@
  */
 
 const {
-  getAPIKey,
+  upstreamAuth,
   resolveModel,
   isAuthorized,
   readBody,
@@ -47,11 +47,6 @@ module.exports = async function handler(req, res) {
     return sendJSON(res, 401, openAIError("invalid or missing client key", "authentication_error", 401));
   }
 
-  const upstreamKey = getAPIKey();
-  if (!upstreamKey) {
-    return sendJSON(res, 500, openAIError("UPSTREAM_API_KEY is not configured on the server", "server_error", 500));
-  }
-
   let raw;
   try {
     raw = await readBody(req);
@@ -73,13 +68,15 @@ module.exports = async function handler(req, res) {
 
   let upstream;
   try {
+    const headers = {
+      "content-type": "application/json",
+      accept: payload.stream ? "text/event-stream" : "application/json",
+    };
+    const auth = upstreamAuth();
+    if (auth) headers.authorization = auth;
     upstream = await fetch(upstreamEndpoint("/v1/chat/completions"), {
       method: "POST",
-      headers: {
-        "content-type": "application/json",
-        accept: payload.stream ? "text/event-stream" : "application/json",
-        authorization: "Bearer " + upstreamKey,
-      },
+      headers,
       body: JSON.stringify(payload),
     });
   } catch (e) {

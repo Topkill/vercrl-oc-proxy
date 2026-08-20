@@ -8,7 +8,7 @@
  */
 
 const {
-  getAPIKey,
+  upstreamAuth,
   isAuthorized,
   sendJSON,
   openAIError,
@@ -62,16 +62,13 @@ module.exports = async function handler(req, res) {
     return sendJSON(res, 200, { object: "list", data });
   }
 
-  // 2) 透传上游
-  const upstreamKey = getAPIKey();
-  if (!upstreamKey) {
-    return sendJSON(res, 500, openAIError("UPSTREAM_API_KEY is not configured on the server", "server_error", 500));
-  }
+  // 2) 透传上游 (UPSTREAM_API_KEY 可为空, 空时透传客户端 Authorization)
   let upstream;
   try {
-    upstream = await fetch(upstreamEndpoint("/v1/models"), {
-      headers: { authorization: "Bearer " + upstreamKey, accept: "application/json" },
-    });
+    const headers = { accept: "application/json" };
+    const auth = upstreamAuth();
+    if (auth) headers.authorization = auth;
+    upstream = await fetch(upstreamEndpoint("/v1/models"), { headers });
   } catch (e) {
     return sendJSON(res, 502, openAIError("upstream unreachable: " + e.message, "server_error", 502));
   }

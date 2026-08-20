@@ -25,8 +25,8 @@ vercel.json                   # 路由与函数配置
 
 | 变量 | 必填 | 说明 |
 | --- | --- | --- |
-| `UPSTREAM_BASE_URL` | 是 | 上游 Base URL, 如 `https://api.deepseek.com` (带不带 `/v1` 均可) |
-| `UPSTREAM_API_KEY` | 是 | 上游 API Key |
+| `UPSTREAM_BASE_URL` | 否 | 上游 Base URL, 默认 `https://opencode.ai/zen`; 如 `https://api.deepseek.com` (带不带 `/v1` 均可) |
+| `UPSTREAM_API_KEY` | 否 | 上游 API Key。**可留空**: 为空时不再报 500, 而是把客户端请求里的 `Authorization` 头原样透传给上游 (适合 `https://opencode.ai/zen` 这类免 key 或沿用客户端 key 的场景) |
 | `CLIENT_KEYS` | 否 | 逗号分隔的客户端密钥, 空 = 不鉴权; opencode 用它作为 apiKey |
 | `MODEL_ALIASES` | 否 | JSON 别名表, 如 `{"deepseek:free":"deepseek-chat"}` |
 | `UPSTREAM_MODELS` | 否 | 逗号分隔或 JSON 数组的模型列表; 设置后 `/v1/models` 直接返回它, 不再请求上游 |
